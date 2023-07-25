@@ -20,7 +20,7 @@ import mysql # python -m pip install mysql-connector-python
 OS: Windows 
 ```
 
-## MySQLdb_bespoke mapping
+## MySQL_bespoke mapping
 ```
 The class diagram to be presented.
 
