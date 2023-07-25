@@ -1,4 +1,4 @@
-# Welcome to MySQLdb_bespoke repo
+# Welcome to MySQL_bespoke repo
 ```
 Hi,
 
