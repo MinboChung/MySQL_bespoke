@@ -35,18 +35,30 @@ class MySQLConnector(ABC):
         self.usr = my_oracle_usr if usr == None else usr
         self.pw = my_oracle_pw if pw == None else pw
         self.db = db
-        self.my_dbconnection = None
+        try:
+                self.mydb_connection = connector.connect(
+                    host=self.host,
+                    user=self.usr,
+                    password=self.pw
+                )
+                print("Successfully connected")
+        except Error as e:
+                print(f"The error {e} occured")
 
     def connect(self):
-        try:
-            self.mydb_connection = connector.connect(
-                host=self.host,
-                user=self.usr,
-                password=self.pw
-            )
-            print("Successfully connected")
-        except Error as e:
-            print(f"The error {e} occured")
+
+        if not self.mydb_connection:
+            try:
+                self.mydb_connection = connector.connect(
+                    host=self.host,
+                    user=self.usr,
+                    password=self.pw
+                )
+                print("Successfully connected")
+            except Error as e:
+                print(f"The error {e} occured")
+        else:
+            print("MySQL is connected already")
 
     def close_connection(self):
         if self.mydb_connection:
@@ -74,6 +86,8 @@ class MySQLConnector(ABC):
         # 1. Check if the db_name is defined
         if not db_name:
             raise Exception("Database name needs to be defined.")
+        else:
+            db_name = db_name.lower()
 
         # 2. Check mysql connection
         db_conn = self.mydb_connection
@@ -86,10 +100,10 @@ class MySQLConnector(ABC):
         my_cursor.execute(existence_check_query)
         db_list = [x for x in my_cursor if x[0] == db_name]
         if len(db_list) > 0:
-            print(f"CREATE TB: {db_name} already exist")
+            print(f"CREATE DB: {db_name} already exist")
             return
         else:
-            print(f"CREATE TB: {db_name} does not exist")
+            print(f"CREATE DB: {db_name} does not exist")
 
         # 4. Create db
         create_db_query = f"CREATE DATABASE {db_name}"
@@ -100,15 +114,16 @@ class MySQLConnector(ABC):
         my_cursor.execute(existence_check_query)
         db_list = [x for x in my_cursor if x[0] == db_name]
         if len(db_list) > 0:
-            print(f"CREATE TB: {db_name} created")
+            print(f"CREATE DB: {db_name} created")
         else:
-            print(f"CREATE TB: {db_name} failed to be created")
-
+            print(f"CREATE DB: {db_name} failed to be created")
 
     def delete_database(self, db_name:str=None):
         # 1. Check if the db_name is defined
         if not db_name:
             raise Exception("Database name needs to be defined.")
+        else:
+            db_name = db_name.lower()
 
         # 2. Check mysql connection
         db_conn = self.mydb_connection
@@ -139,11 +154,24 @@ class MySQLConnector(ABC):
         else:
             print(f"DROP TB: {db_name} is not removed")
 
+    def show_databases(self):
+        # 1. Check mysql connection
+        db_conn = self.mydb_connection
+        if not db_conn.is_connected():
+            db_conn.connect()
+        my_cursor = db_conn.cursor()
+        existence_check_query = f"SHOW DATABASES"
+        my_cursor.execute(existence_check_query)
+        for x in my_cursor:
+            print(x[0])
+        
+
 
 if __name__ == "__main__":
     my_db_connection = MySQLConnector()
     my_db_connection.connect()
-    my_db_connection.create_database(db_name="minbo_db")
-    my_db_connection.delete_database(db_name="minbo_db")
+    # my_db_connection.create_database(db_name="minbo_db")
+    # my_db_connection.delete_database(db_name="minbo_db")
+    my_db_connection.show_databases()
     my_db_connection.close_connection()
     ...
